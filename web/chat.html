@@ -76,6 +76,7 @@
             let words = $("#words");
             let talkWords = $("#talkwords");
             let talkSubmit = $("#talksub");
+            let lasttime = $("#lasttime");
             // webSocket
             ws = new WebSocket("{{.}}");
             try {
@@ -109,6 +110,7 @@
                     words.html(str);
                     var scrollHeight = words.prop("scrollHeight");
                     words.scrollTop(scrollHeight);
+                    lasttime.val(data.lasttime)
                 };
 
                 // 监听错误
@@ -145,7 +147,7 @@
                     window.location.reload();
                     return
                 }
-                let request = {"username":username, "message":content};
+                let request = {"Username":username, "Message":content,"Lasttime":lasttime.val()};
                 ws.send(JSON.stringify(request));
                 // 清空输入框
                 talkWords.val("")
@@ -170,6 +172,7 @@
 
     </div>
     <div class="talk_input">
+        <input type="hidden" id="lasttime" value="" >
         <input type="text" class="talk_word" id="talkwords" placeholder="输入聊天内容">
         <input type="button" value="发送" class="talk_sub" id="talksub">
     </div>
