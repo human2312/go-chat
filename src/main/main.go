@@ -15,5 +15,7 @@ func main() {
 	log.SetFlags(0)
 	http.HandleFunc("/echo", socket.Echo)
 	http.HandleFunc("/websocket", socket.Home)
+	http.HandleFunc("/chat", socket.Index)
+	http.HandleFunc("/chatSocket", socket.ChatSocket)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
