@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -17,6 +18,8 @@ type Message struct {
 
 // 全局信息
 var messages []Message
+var newmsg Message
+var user map[string]string
 
 func Index(w http.ResponseWriter, r *http.Request) {
 	homeTemplate, _ := template.ParseFiles("../../web/chat.html")
@@ -40,41 +43,52 @@ func ChatSocket(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 	}
+	defer c.Close()
 
-	//defer c.Close()
+	go func() {
+		for {
+			if newmsg.Username != "" {
+				log.Println("当前用户",user)
+				err :=c.WriteMessage(1, []byte("{\"username\":\""+newmsg.Username+"\",\"message\":\""+newmsg.Message+"\",\"lasttime\":\""+strconv.FormatInt(newmsg.Lasttime, 10)+"\"}"))
+				if err != nil {
+					fmt.Println("发送出错: " + err.Error())
+					break
+				}
+				time.Sleep(time.Second)
+				newmsg = Message{
+					Username: "",
+					Message:  "",
+					Lasttime: 0,
+				}
+			}
+		}
+	}()
+
 	for {
 		// 接收数据
-		mt, message, err := c.ReadMessage()
+		_, message, err := c.ReadMessage()
 		if err != nil {
 			break
 		}
 
 		// 解析信息
 		err = json.Unmarshal([]byte(message), &msg)
-		if err != nil {
-			fmt.Println("解析数据异常")
+
+		// 添加新用户到map中,已经存在的用户不必添加
+		if user != nil {
+			if _, ok := user[msg.Username]; !ok {
+				user[msg.Username] = msg.Username
+			}
+		}else {
+			user = make(map[string]string, 10)
+			user[msg.Username] = msg.Username
 		}
-		fmt.Println(message)
-		//获取到前端最后阅读时间
-		lasttime := msg.Lasttime
 
 		// 添加聊天记录到全局信息
 		msg.Lasttime = time.Now().Unix()
+		newmsg = msg
 		messages = append(messages, msg)
-
-		// 通过webSocket将当前信息分发
-		for _, val := range messages {
-			s1 := []byte("{\"username\":\"" + val.Username + "\",\"message\":\"" + val.Message + "\",\"lasttime\":\"" + strconv.FormatInt(val.Lasttime, 10) + "\"}")
-			fmt.Println(val)
-			fmt.Println(lasttime)
-			if val.Lasttime > lasttime {
-				err = c.WriteMessage(mt, s1)
-				if err != nil {
-					fmt.Println("发送出错: " + err.Error())
-					break
-				}
-			}
-		}
-
+		log.Println("聊天记录",messages)
+		log.Println("当前聊天记录",newmsg)
 	}
 }
