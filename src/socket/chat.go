@@ -47,11 +47,14 @@ func ChatSocket(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		for {
+			log.Println("当前信息",newmsg)
+			time.Sleep(time.Second / 2)
 			if newmsg.Username != "" {
 				log.Println("当前用户",user)
 				err :=c.WriteMessage(1, []byte("{\"username\":\""+newmsg.Username+"\",\"message\":\""+newmsg.Message+"\",\"lasttime\":\""+strconv.FormatInt(newmsg.Lasttime, 10)+"\"}"))
 				if err != nil {
 					fmt.Println("发送出错: " + err.Error())
+					c.Close()
 					break
 				}
 				time.Sleep(time.Second)
