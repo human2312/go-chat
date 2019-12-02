@@ -47,11 +47,11 @@ func ChatSocket(w http.ResponseWriter, r *http.Request) {
 
 	go func() {
 		for {
-			log.Println("当前信息",newmsg)
-			time.Sleep(time.Second / 2)
+			//log.Println("当前信息",newmsg)
+			time.Sleep(time.Second / 10) //0.1秒缓冲
 			if newmsg.Username != "" {
-				log.Println("当前用户",user)
-				err :=c.WriteMessage(1, []byte("{\"username\":\""+newmsg.Username+"\",\"message\":\""+newmsg.Message+"\",\"lasttime\":\""+strconv.FormatInt(newmsg.Lasttime, 10)+"\"}"))
+				//log.Println("当前用户",user)
+				err := c.WriteMessage(1, []byte("{\"username\":\""+newmsg.Username+"\",\"message\":\""+newmsg.Message+"\",\"lasttime\":\""+strconv.FormatInt(newmsg.Lasttime, 10)+"\"}"))
 				if err != nil {
 					fmt.Println("发送出错: " + err.Error())
 					c.Close()
@@ -82,7 +82,7 @@ func ChatSocket(w http.ResponseWriter, r *http.Request) {
 			if _, ok := user[msg.Username]; !ok {
 				user[msg.Username] = msg.Username
 			}
-		}else {
+		} else {
 			user = make(map[string]string, 10)
 			user[msg.Username] = msg.Username
 		}
@@ -91,7 +91,7 @@ func ChatSocket(w http.ResponseWriter, r *http.Request) {
 		msg.Lasttime = time.Now().Unix()
 		newmsg = msg
 		messages = append(messages, msg)
-		log.Println("聊天记录",messages)
-		log.Println("当前聊天记录",newmsg)
+		log.Println("聊天记录", messages)
+		log.Println("当前聊天记录", newmsg)
 	}
 }

@@ -2,8 +2,8 @@ package socket
 
 import (
 	"github.com/gorilla/websocket"
-	"log"
 	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -34,6 +34,6 @@ func Echo(w http.ResponseWriter, r *http.Request) {
 
 //首页
 func Home(w http.ResponseWriter, r *http.Request) {
-	homeTemplate, _ :=template.ParseFiles("../../web/index.html")
+	homeTemplate, _ := template.ParseFiles("../../web/index.html")
 	homeTemplate.Execute(w, "ws://"+r.Host+"/echo")
 }

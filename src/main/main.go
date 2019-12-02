@@ -2,20 +2,24 @@
 package main
 
 import (
-	"flag"
+	"../socket"
+	"fmt"
 	"log"
 	"net/http"
-	"../socket"
 )
 
-var addr = flag.String("addr", "localhost:8080", "http service address")
+func index(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello Wrold!<br/><a herf='/chat'>chat room</a>") //这个写入到w的是输出到客户端的
+}
 
 func main() {
-	flag.Parse()
-	log.SetFlags(0)
+	http.HandleFunc("/", index) //设置访问的路由
 	http.HandleFunc("/echo", socket.Echo)
 	http.HandleFunc("/websocket", socket.Home)
 	http.HandleFunc("/chat", socket.Index)
 	http.HandleFunc("/chatSocket", socket.ChatSocket)
-	log.Fatal(http.ListenAndServe(*addr, nil))
+	err := http.ListenAndServe(":8080", nil) //设置监听的端口
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
 }
